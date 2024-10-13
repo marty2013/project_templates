@@ -1,0 +1,42 @@
+# Build for library TESTING
+
+SRC_DIR = ./src
+
+SRC = $(shell ls $(SRC_DIR))
+SRC_EXT = cpp
+
+CC = g++
+CPPFLAGS = -Wall -fdiagnostics-color=always -std=c++20 -fmodules-ts -O0 -DDEBUG -g
+
+BUILD = build
+TARGET_DIR = ./${BUILD}/bin
+OBJ_DIR = ./${BUILD}/obj
+
+TARGET = ${TARGET_DIR}/test
+
+SRCS = ${patsubst %.${SRC_EXT}, ${SRC_DIR}/%.${SRC_EXT}, ${SRC}}
+OBJS = ${patsubst %.${SRC_EXT}, ${OBJ_DIR}/%.o, ${SRC}}
+
+.phony: all
+all: ${TARGET}
+
+.phony: run
+run: ${TARGET}
+	@${TARGET}
+
+# The build directory will contain the build artifacts
+# The final version of the library will be copied to the library path
+${TARGET}: ${OBJS}
+	@echo "Creating test app"
+	$(CC) $(CPPFLAGS) -o $@ $<
+	chmod +x $@
+ 
+${OBJ_DIR}/%.o:${SRC_DIR}/%.cpp
+	@echo "Compiling test code"
+	$(CC) $(CPPFLAGS) -c -o $@ $<
+
+.phony: clean
+clean:
+	@echo "Tidy up"
+	@rm ${OBJ_DIR}/*.o || true
+	@rm ${TARGET} || true

@@ -1,0 +1,120 @@
+
+# Makefile to setup project directories for a c++ app
+TYPE="C++ App"
+
+# user input...
+NAME= 
+
+DOC=doc
+SRC=src
+HDR=include
+TEST=test
+
+BUILD=build
+DEBUG=debug
+RELEASE=release
+BIN=bin
+OBJ=obj
+
+DOC_DIR=./$(NAME)/$(DOC)
+SRC_DIR=./$(NAME)/$(SRC)
+INCLUDE_DIR=./$(NAME)/$(HDR)
+
+APP_SRC = $(SRC_DIR)/$(NAME).cpp
+HDR_FILE = $(INCLUDE_DIR)/$(NAME).hpp
+
+BUILD_DIR=./$(NAME)/$(BUILD)
+BUILD_DEBUG_DIR=./$(BUILD_DIR)/$(DEBUG)
+BUILD_RELEASE_DIR=./$(BUILD_DIR)/$(RELEASE)
+BUILD_DEBUG_BIN_DIR=./$(BUILD_DEBUG_DIR)/$(BIN)
+BUILD_DEBUG_OBJ_DIR=./$(BUILD_DEBUG_DIR)/$(OBJ)
+BUILD_RELEASE_BIN_DIR=./$(BUILD_RELEASE_DIR)/$(BIN)
+BUILD_RELEASE_OBJ_DIR=./$(BUILD_RELEASE_DIR)/$(OBJ)
+
+# Tests are always built in debug
+# Note also, src dir will also contain any headers
+TEST_DIR=./$(NAME)/$(TEST)
+TEST_SRC_DIR=./$(TEST_DIR)/$(SRC)
+TEST_BUILD_DIR=./$(TEST_DIR)/$(BUILD)
+TEST_BUILD_BIN_DIR=./$(TEST_BUILD_DIR)/$(BIN)
+TEST_BUILD_OBJ_DIR=./$(TEST_BUILD_DIR)/$(OBJ)
+
+TEST_APP = $(TEST_SRC_DIR)/test.cpp
+
+README_DIR=./$(NAME)
+README_FILE = $(README_DIR)/README.md
+
+.phony : setup
+setup :  | docheck
+	@echo "Creating required directory structure for app '$(NAME)'..."
+	@mkdir $(NAME)
+
+# base level directories
+	@mkdir $(SRC_DIR)
+	@mkdir $(INCLUDE_DIR)
+	@mkdir $(DOC_DIR)
+
+# create app.hpp
+	@echo "#pragma once" >> $(HDR_FILE)
+
+# create app.cpp ready for compilation
+	@echo "// Entry point code here for app $(NAME)" >> $(APP_SRC)
+	@echo "" >> $(APP_SRC)
+	@echo "#include <iostream>" >> $(APP_SRC)
+	@echo "#include <../$(HDR)/$(NAME).hpp>" >> $(APP_SRC)
+	@echo "" >> $(APP_SRC)
+	@echo "int main()" >> $(APP_SRC)
+	@echo "{" >> $(APP_SRC)
+	@echo '  std::cout << "Hello from $(NAME)" << std::endl;' >> $(APP_SRC)
+	@echo "  return 0;" >> $(APP_SRC)
+	@echo "}" >> $(APP_SRC)
+
+# build level directories
+	@mkdir $(BUILD_DIR)
+	@mkdir $(BUILD_DEBUG_DIR)
+	@mkdir $(BUILD_DEBUG_BIN_DIR)
+	@mkdir $(BUILD_DEBUG_OBJ_DIR)
+	@mkdir $(BUILD_RELEASE_DIR)
+	@mkdir $(BUILD_RELEASE_BIN_DIR)
+	@mkdir $(BUILD_RELEASE_OBJ_DIR)
+
+# build test directories
+	@mkdir $(TEST_DIR)
+	@mkdir $(TEST_SRC_DIR)
+	@mkdir $(TEST_BUILD_DIR)
+	@mkdir $(TEST_BUILD_BIN_DIR)
+	@mkdir $(TEST_BUILD_OBJ_DIR)
+
+# create test.cpp ready for test code
+	@echo "// Testing entry point code here for app $(NAME)" >> $(TEST_APP)
+	@echo "" >> $(TEST_APP)
+	@echo "#include <iostream>" >> $(TEST_APP)
+	@echo "" >> $(TEST_APP)
+	@echo "int main()" >> $(TEST_APP)
+	@echo "{" >> $(TEST_APP)
+	@echo '  std::cout << "Testing for $(NAME)" << std::endl;' >> $(TEST_APP)
+	@echo "  return 0;" >> $(TEST_APP)
+	@echo "}" >> $(TEST_APP)
+
+# create README file
+	@echo "## $(TYPE) '$(NAME)'" >> $(README_FILE)
+
+# done
+	@echo "...Done."
+	@echo "App project directories build for '$(NAME)'"
+
+.phoney: docheck
+docheck:
+ifeq "$(NAME)" ""
+	@echo "Name of the app is required."
+	@echo "Use 'make NAME=<appname>'"
+	@echo "Exiting."
+	@exit 1
+else
+	@if test -d $(NAME);then \
+	echo "Directory '$(NAME)' already exists."; \
+	echo "Exiting."; \
+	exit 1; \
+	fi
+endif
+

@@ -1,0 +1,105 @@
+
+# Makefile to setup project directories for a c++ library
+TYPE="C++ Library"
+
+# user input...
+LNAME= 
+
+DOC=doc
+SRC=src
+HDR=include
+TEST=test
+LIB=lib
+
+BUILD=build
+DEBUG=debug
+RELEASE=release
+BIN=bin
+OBJ=obj
+
+DOC_DIR=./$(LNAME)/$(DOC)
+SRC_DIR=./$(LNAME)/$(SRC)
+INCLUDE_DIR=./$(LNAME)/$(HDR)
+LIB_DIR=./$(LNAME)/$(LIB)
+
+BUILD_DIR=./$(LNAME)/$(BUILD)
+BUILD_DEBUG_DIR=./$(BUILD_DIR)/$(DEBUG)
+BUILD_RELEASE_DIR=./$(BUILD_DIR)/$(RELEASE)
+BUILD_DEBUG_BIN_DIR=./$(BUILD_DEBUG_DIR)/$(BIN)
+BUILD_DEBUG_OBJ_DIR=./$(BUILD_DEBUG_DIR)/$(OBJ)
+BUILD_RELEASE_BIN_DIR=./$(BUILD_RELEASE_DIR)/$(BIN)
+BUILD_RELEASE_OBJ_DIR=./$(BUILD_RELEASE_DIR)/$(OBJ)
+
+# Tests are always built in debug
+# Note also, src dir will also contain any headers
+TEST_DIR=./$(LNAME)/$(TEST)
+TEST_SRC_DIR=./$(TEST_DIR)/$(SRC)
+TEST_BUILD_DIR=./$(TEST_DIR)/$(BUILD)
+TEST_BUILD_BIN_DIR=./$(TEST_BUILD_DIR)/$(BIN)
+TEST_BUILD_OBJ_DIR=./$(TEST_BUILD_DIR)/$(OBJ)
+
+TEST_APP = $(TEST_SRC_DIR)/test.cpp
+
+README_DIR=./$(LNAME)
+README_FILE = $(README_DIR)/README.md
+
+.phony : setup
+setup :  | docheck
+	@echo "Creating required directory structure for library '$(LNAME)'..."
+	@mkdir $(LNAME)
+
+# base level directories
+	@mkdir $(SRC_DIR)
+	@mkdir $(INCLUDE_DIR)
+	@mkdir $(DOC_DIR)
+	@mkdir $(LIB_DIR)
+
+# build level directories
+	@mkdir $(BUILD_DIR)
+	@mkdir $(BUILD_DEBUG_DIR)
+	@mkdir $(BUILD_DEBUG_BIN_DIR)
+	@mkdir $(BUILD_DEBUG_OBJ_DIR)
+	@mkdir $(BUILD_RELEASE_DIR)
+	@mkdir $(BUILD_RELEASE_BIN_DIR)
+	@mkdir $(BUILD_RELEASE_OBJ_DIR)
+
+# build test directories
+	@mkdir $(TEST_DIR)
+	@mkdir $(TEST_SRC_DIR)
+	@mkdir $(TEST_BUILD_DIR)
+	@mkdir $(TEST_BUILD_BIN_DIR)
+	@mkdir $(TEST_BUILD_OBJ_DIR)
+
+# create test.cpp ready for test code
+	@echo "// Testing entry point code here for library $(LNAME)" >> $(TEST_APP)
+	@echo "" >> $(TEST_APP)
+	@echo "#include <iostream>" >> $(TEST_APP)
+	@echo "" >> $(TEST_APP)
+	@echo "int main()" >> $(TEST_APP)
+	@echo "{" >> $(TEST_APP)
+	@echo '  std::cout << "Testing for $(LNAME)" << std::endl;' >> $(TEST_APP)
+	@echo "  return 0;" >> $(TEST_APP)
+	@echo "}" >> $(TEST_APP)
+
+# create README file
+	@echo "## $(TYPE) '$(LNAME)'" >> $(README_FILE)
+
+# done
+	@echo "...Done."
+	@echo "Library project directories build for '$(LNAME)'"
+
+.phoney: docheck
+docheck:
+ifeq "$(LNAME)" ""
+	@echo "Name of the library is required."
+	@echo "Use 'make LNAME=<libname>'"
+	@echo "Exiting."
+	@exit 1
+else
+	@if test -d $(LNAME);then \
+	echo "Directory '$(LNAME)' already exists."; \
+	echo "Exiting."; \
+	exit 1; \
+	fi
+endif
+

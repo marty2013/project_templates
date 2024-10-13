@@ -1,0 +1,80 @@
+
+##=========================================================================================
+## Makefile for Application Build
+##=========================================================================================
+
+# config setting to debug or release ( "make CFG=release" or defaults to debug if not provided)
+CFG ?= debug
+
+SRC_DIR = ./src
+HDR_DIR = ./include
+
+SRC = $(shell ls $(SRC_DIR))
+SRC_EXT = cpp
+
+CC = g++
+CPPFLAGS = -Wall -fdiagnostics-color=always -std=c++20 -fmodules-ts -I${HDR_DIR}
+
+# just in case we need to update for external library linking
+LNK = ar
+LNKFLAGS = crf
+
+# config setup
+ifeq ($(CFG),debug)
+CPPFLAGS += -O0 -DDEBUG -g
+else
+CPPFLAGS += -O3 -DNDEBUG
+endif
+ 
+# Assume we are in the root directory of the app
+# where the directory name is the app name
+APP_NAME = $(shell basename `pwd`)
+APP = ${APP_NAME}
+
+BUILD = build
+TARGET_DIR = ./${BUILD}/$(CFG)/bin
+OBJ_DIR = ./${BUILD}/$(CFG)/obj
+
+TARGET = ${TARGET_DIR}/${APP}
+
+SRCS = ${patsubst %.${SRC_EXT}, ${SRC_DIR}/%.${SRC_EXT}, ${SRC}}
+OBJS = ${patsubst %.${SRC_EXT}, ${OBJ_DIR}/%.o, ${SRC}}
+
+.phony: all
+all: ${TARGET} | inform
+
+.phony: run
+run: ${TARGET}
+	@${TARGET}
+
+# The build directory will contain the build artifacts
+# The final version of the library will be copied to the library path
+${TARGET}: ${OBJS}
+	@echo "Creating application"
+	$(CC) $(CPPFLAGS) -o $@ $<
+	chmod +x $@
+ 
+${OBJ_DIR}/%.o:${SRC_DIR}/%.cpp
+	@echo "Compiling ${CFG} verion"
+	$(CC) $(CPPFLAGS) -c -o $@ $<
+
+.phony: clean
+clean: | inform
+	@echo "Tidy up"
+	@rm ${OBJ_DIR}/*.o || true
+	@rm ${TARGET} || true
+
+inform:
+ifneq ($(CFG),release)
+ifneq ($(CFG),debug)
+	@echo "Invalid configuration "$(CFG)" specified."
+	@echo
+	@echo "Possible choices of configuration are 'CFG=release' or 'CFG=debug'"
+	@exit 1
+endif
+endif
+	@echo "Configuration "$(CFG)
+	@echo "-------------------------------------------------------"
+
+check: 
+	@echo ${SRCS}

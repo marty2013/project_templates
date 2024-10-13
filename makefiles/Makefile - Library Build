@@ -1,0 +1,77 @@
+# config setting to debug or release ( "make CFG=release" or defaults to debug if not provided)
+CFG ?= debug
+
+SRC_DIR = ./src
+HDR_DIR = ./include
+
+SRC = $(shell ls $(SRC_DIR))
+SRC_EXT = cpp
+
+CC = g++
+CPPFLAGS = -Wall -fdiagnostics-color=always -std=c++20 -fmodules-ts -I${HDR_DIR}
+
+LNK = ar
+LNKFLAGS = crf
+
+# config setup
+ifeq ($(CFG),debug)
+CPPFLAGS += -O0 -DDEBUG -g
+else
+CPPFLAGS += -O3 -DNDEBUG
+endif
+ 
+# Assume we are in the root directory of the library
+# where the directory name is the library name
+LIB_NAME = $(shell basename `pwd`)
+LIBRARY = ${LIB_NAME}.a
+
+BUILD = build
+TARGET_DIR = ./${BUILD}/$(CFG)/bin
+OBJ_DIR = ./${BUILD}/$(CFG)/obj
+LIB_DIR = ./lib
+
+TARGET = ${TARGET_DIR}/${LIBRARY}
+
+SRCS = ${patsubst %.${SRC_EXT}, ${SRC_DIR}/%.${SRC_EXT}, ${SRC}}
+OBJS = ${patsubst %.${SRC_EXT}, ${OBJ_DIR}/%.o, ${SRC}}
+
+.phony: all
+all: ${TARGET} | inform
+
+.phony: run
+run: ${TARGET}
+	@${TARGET}
+
+# The build directory will contain the build artifacts
+# The final version of the library will be copied to the library path
+${TARGET}: ${OBJS}
+	@echo "Creating static library"
+	$(LNK) $(LNKFLAGS) $@ ${OBJS}
+	chmod +x $@
+	cp $@ ${LIB_DIR}
+ 
+${OBJ_DIR}/%.o:${SRC_DIR}/%.cpp
+	@echo "Compiling ${CFG} verion"
+	$(CC) $(CPPFLAGS) -c -o $@ $<
+
+.phony: clean
+clean: | inform
+	@echo "Tidy up"
+	@rm ${LIB_DIR}/${LIBRARY} || true
+	@rm ${OBJ_DIR}/*.o || true
+	@rm ${TARGET} || true
+
+inform:
+ifneq ($(CFG),release)
+ifneq ($(CFG),debug)
+	@echo "Invalid configuration "$(CFG)" specified."
+	@echo
+	@echo "Possible choices of configuration are 'CFG=release' or 'CFG=debug'"
+	@exit 1
+endif
+endif
+	@echo "Configuration "$(CFG)
+	@echo "-------------------------------------------------------"
+
+check: 
+	@echo ${SRCS}
