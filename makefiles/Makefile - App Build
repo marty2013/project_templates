@@ -51,7 +51,7 @@ run: ${TARGET}
 # The final version of the library will be copied to the library path
 ${TARGET}: ${OBJS}
 	@echo "Creating application"
-	$(CC) $(CPPFLAGS) -o $@ $<
+	$(CC) $(CPPFLAGS) -o $@ $^
 	chmod +x $@
  
 ${OBJ_DIR}/%.o:${SRC_DIR}/%.cpp
